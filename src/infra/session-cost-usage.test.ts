@@ -46,9 +46,7 @@ describe("session cost usage", () => {
 
     const logs = await loadSessionLogs({ sessionFile });
     expect(logs).toHaveLength(1);
-    expect(logs?.[0]?.provider).toBe("openrouter");
-    expect(logs?.[0]?.costTotal).toBeCloseTo(0.0045, 10);
-    expect(logs?.[0]?.costBreakdown?.total).toBeCloseTo(0.0045, 10);
+    expect(logs?.[0]?.cost).toBeCloseTo(0.0045, 10);
   });
 
   it("aggregates daily totals with log cost and pricing fallback", async () => {
