@@ -2,11 +2,34 @@ function readDiscordChannelPropertySafe(channel: unknown, key: string): unknown 
   if (!channel || typeof channel !== "object") {
     return undefined;
   }
+
+  // Avoid triggering getters on partial @buape/carbon channel objects.
+  // Some properties (e.g. parentId) access rawData internally and can throw
+  // when the channel is partial. Walking the prototype chain using property
+  // descriptors lets us safely read plain data properties without invoking
+  // accessors.
   try {
-    if (!(key in channel)) {
-      return undefined;
+    let cursor: object | null = channel;
+    while (cursor) {
+      const desc = Object.getOwnPropertyDescriptor(cursor, key);
+      if (desc) {
+        if ("value" in desc) {
+          return desc.value;
+        }
+        // Accessor property: calling the getter may throw on partial objects.
+        // Best-effort: try/catch the getter; otherwise treat as unavailable.
+        if (typeof desc.get === "function") {
+          try {
+            return desc.get.call(channel);
+          } catch {
+            return undefined;
+          }
+        }
+        return undefined;
+      }
+      cursor = Object.getPrototypeOf(cursor);
     }
-    return (channel as Record<string, unknown>)[key];
+    return undefined;
   } catch {
     return undefined;
   }
