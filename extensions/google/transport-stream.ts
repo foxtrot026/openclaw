@@ -357,7 +357,13 @@ function convertGoogleMessages(model: GoogleTransportModel, context: Context) {
               name: block.name,
               args: coerceTransportToolCallArguments(block.arguments),
               ...(requiresToolCallId(model.id) ? { id: block.id } : {}),
+              // Gemini API requires the thought signature to be nested under the functionCall
+              // payload (snake_case) for tool calls to validate.
+              ...(isSameProviderAndModel && block.thoughtSignature
+                ? { thought_signature: block.thoughtSignature }
+                : {}),
             },
+            // Keep legacy field for backward-compat (other tooling/tests may still assert this)
             ...(isSameProviderAndModel && block.thoughtSignature
               ? { thoughtSignature: block.thoughtSignature }
               : {}),

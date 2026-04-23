@@ -318,7 +318,11 @@ describe("google transport stream", () => {
       parts: [
         {
           thoughtSignature: "call_sig_1",
-          functionCall: { name: "lookup", args: { q: "hello" } },
+          functionCall: {
+            name: "lookup",
+            args: { q: "hello" },
+            thought_signature: "call_sig_1",
+          },
         },
       ],
     });
